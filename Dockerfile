@@ -45,7 +45,7 @@ ENV BUILD_PACKAGES="\
 RUN echo "Begin" \
 ##  && echo '199.232.68.133 raw.githubusercontent.com' >> /etc/hosts \
   && echo "${TIMEZONE}" > /etc/timezone \
-  && GITHUB_URL='https://github.com/tianxiawuzhe/chgcheck_alpine312_py385_django312/raw/master' \
+##  && GITHUB_URL='https://github.com/tianxiawuzhe/chgcheck_alpine312_py385_django312/raw/master' \
 ##  && wget -O Dockerfile --timeout=30 -t 5 "${GITHUB_URL}/Dockerfile" \
 ##  && wget -O entrypoint.sh --timeout=30 -t 5 "${GITHUB_URL}/entrypoint.sh" \
   && echo "********** 安装oracle驱动" \
