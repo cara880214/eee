@@ -6,8 +6,9 @@ ENV TNS_ADMIN=/oracle_client/instantclient_11_2
 ENV NLS_LANG=SIMPLIFTED_CHINESE_CHINA_ZHS16GBK
 ENV LD_LIBRARY_PATH=/oracle_client/instantclient_11_2
 
-COPY ./github_hosts ./entrypoint.sh ./Dockerfile  /
+COPY ./github_hosts ./entrypoint.sh ./Dockerfile ./instantclient-basic-linux.x64-11.2.0.4.0.zip  /
 COPY Shanghai /etc/localtime
+
 
 #### packages from https://pkgs.alpinelinux.org/packages
 # These are always installed. Notes:
@@ -50,7 +51,7 @@ RUN echo "Begin" \
 ##  && wget -O entrypoint.sh --timeout=30 -t 5 "${GITHUB_URL}/entrypoint.sh" \
   && echo "********** 安装oracle驱动" \
   && mkdir /oracle_client \
-  && cp ./instantclient-basic-linux.x64-11.2.0.4.0.zip /oracle_client \
+  && cp /instantclient-basic-linux.x64-11.2.0.4.0.zip /oracle_client \
   && cd /oracle_client \ 
 ##  && wget -O client.zip ./instantclient-basic-linux.x64-11.2.0.4.0.zip \
   && unzip ./instantclient-basic-linux.x64-11.2.0.4.0.zip \
