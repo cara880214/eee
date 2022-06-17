@@ -1,6 +1,13 @@
 FROM alpine:3.12
 
 ENV ALPINE_VERSION=3.12
+ENV TIMEZONE=Asia/Shanghai
+ENV TNS_ADMIN=/oracle_client/instantclient_11_2
+ENV NLS_LANG=SIMPLIFTED_CHINESE_CHINA_ZHS16GBK
+ENV LD_LIBRARY_PATH=/oracle_client/instantclient_11_2
+
+COPY ./github_hosts ./entrypoint.sh ./Dockerfile  /
+COPY Shanghai /etc/localtime
 
 #### packages from https://pkgs.alpinelinux.org/packages
 # These are always installed. Notes:
@@ -14,9 +21,11 @@ ENV ALPINE_VERSION=3.12
 ENV PACKAGES="\
   dumb-init tzdata bash vim tini ncftp busybox-extras \
   python3 \
-  libnsl \
-  libaio \
   mysql-dev \
+  openblas \
+  libgomp \
+  lapack \
+  blas \
 "
 
 # These packages are not installed immediately, but are added at runtime or ONBUILD to shrink the image as much as possible. Notes:
@@ -26,58 +35,75 @@ ENV PACKAGES="\
 ENV BUILD_PACKAGES="\
   build-base \
   linux-headers \
-  gcc musl-dev g++ \
   python3-dev \
+  openblas-dev \
+  lapack-dev \
+  blas-dev \
 "
 
-## for install oracle instant client
-## https://oracle.github.io/odpi/doc/installation.html#linux
-ENV TNS_ADMIN=/oracle_client/instantclient_11_2
-ENV NLS_LANG=SIMPLIFTED_CHINESE_CHINA_ZHS16GBK
-ENV LD_LIBRARY_PATH=/oracle_client/instantclient_11_2
-
 ## running
-RUN echo "Begin" && ls -lrt \
-  && GITHUB_URL='https://github.com/tianxiawuzhe/dbapi_alpine312_py385_django312/raw/master' \
-  && wget -O Dockerfile "${GITHUB_URL}/Dockerfile" \
-  && wget -O /entrypoint.sh "${GITHUB_URL}/entrypoint.sh" \
+RUN echo "Begin" \
+##  && echo '199.232.68.133 raw.githubusercontent.com' >> /etc/hosts \
+  && echo "${TIMEZONE}" > /etc/timezone \
+  && GITHUB_URL='https://github.com/tianxiawuzhe/chgcheck_alpine312_py385_django312/raw/master' \
+##  && wget -O Dockerfile --timeout=30 -t 5 "${GITHUB_URL}/Dockerfile" \
+##  && wget -O entrypoint.sh --timeout=30 -t 5 "${GITHUB_URL}/entrypoint.sh" \
   && echo "********** 安装oracle驱动" \
   && mkdir /oracle_client && cd /oracle_client \
-  && wget -O client.zip "${GITHUB_URL}/instantclient-basic-linux.x64-11.2.0.4.0.zip" \
-  && unzip client.zip && rm client.zip \
+##  && wget -O client.zip ./instantclient-basic-linux.x64-11.2.0.4.0.zip \
+  && unzip /instantclient-basic-linux.x64-11.2.0.4.0.zip \
+##  && rm client.zip \
   && cd /oracle_client/instantclient_11_2 \
   && ln -s libclntsh.so.11.1  libclntsh.so \
   && ln -s /usr/lib/libnsl.so.2.0.0  /usr/lib/libnsl.so.1 \
+  && chmod +x /entrypoint.sh \
+  && ls -l /entrypoint.sh \
   && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
   && echo "********** 安装临时依赖" \
   && apk add --no-cache --virtual=.build-deps $BUILD_PACKAGES \
   && echo "********** 安装永久依赖" \
   && apk add --no-cache $PACKAGES \
   && echo "********** 更新python信息" \
-  && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+##  && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && sed -i 's:mouse=a:mouse-=a:g' /usr/share/vim/vim82/defaults.vim \
   && { [[ -e /usr/bin/python ]] || ln -sf /usr/bin/python3.8 /usr/bin/python; } \
   && python -m ensurepip \
   && python -m pip install --upgrade --no-cache-dir pip \
+  && { [[ -e /usr/bin/pip ]] || ln -sf /usr/bin/pip3 /usr/bin/pip; } \
   && cd /usr/bin \
   && ls -l python* pip* \
   && echo "********** 安装python包" \
-  && pip install --no-cache-dir wheel \
-  && pip install --no-cache-dir Django==3.1.2 \
-  && pip install --no-cache-dir uwsgi==2.0.19.1 \
-  && pip install --no-cache-dir uwsgitop==0.11 \
-  && pip install --no-cache-dir mysqlclient==2.0.1 \
-  && pip install --no-cache-dir influxdb==5.3.0 \
-  && pip install --no-cache-dir mongo==0.2.0 \
-  && pip install --no-cache-dir cx_Oracle==8.0.1 \
-  && pip install --no-cache-dir redis3==3.5.2.2 \
-  && pip install --no-cache-dir kafka-python==2.0.2 \
-  && pip install --no-cache-dir elasticsearch7==7.9.1 \
-#  && pip install --no-cache-dir hdfs==2.2.2 \
+  && speed="-i http://mirrors.aliyun.com/pypi/simple  --trusted-host mirrors.aliyun.com" \
+  && pip install --no-cache-dir wheel ${speed} \
+  && pip install --no-cache-dir requests==2.25.1 ${speed} \
+  && pip install --no-cache-dir Django==3.1.2 ${speed} \
+  && pip install --no-cache-dir uwsgi==2.0.19.1 ${speed} \
+  && pip install --no-cache-dir uwsgitop==0.11 ${speed} \
+  && pip install --no-cache-dir celery[redis]==5.0.1 ${speed} \
+  && pip install --no-cache-dir django-celery-results==2.0.1 ${speed} \
+  && pip install --no-cache-dir django-celery-beat==2.2.0 ${speed} \
+  && pip install --no-cache-dir mysqlclient==2.0.1 ${speed} \
+  && echo "********** 下载whl并安装" \
+  && QINIU_URL='http://pubftp.qn.fplat.cn/alpine3.12/' \
+  && mkdir /whl && cd /whl \
+  && name="numpy-1.20.2-cp38-cp38-linux_x86_64.whl" && wget -O ${name} --timeout=600 -t 5 "${QINIU_URL}/${name}" && pip install --no-cache-dir ${name} \
+  && name="pandas-1.2.3-cp38-cp38-linux_x86_64.whl" && wget -O ${name} --timeout=600 -t 5 "${QINIU_URL}/${name}" && pip install --no-cache-dir ${name} \
+  && name="scipy-1.6.2-cp38-cp38-linux_x86_64.whl" && wget -O ${name} --timeout=600 -t 5 "${QINIU_URL}/${name}" && pip install --no-cache-dir ${name} \
+  && name="scikit_learn-0.24.1-cp38-cp38-linux_x86_64.whl" && wget -O ${name} --timeout=600 -t 5 "${QINIU_URL}/${name}" && pip install --no-cache-dir ${name} \
+  && pip install --no-cache-dir nltk==3.7 ${speed} \
+  && pip install --no-cache-dir jieba==0.42.1 ${speed} \
+  && pip install --no-cache-dir jieba_fast==0.53 ${speed} \
+  && pip install --no-cache-dir Jinja2==3.1.1 ${speed} \
+  && pip install --no-cache-dir flask==2.1.2 ${speed} \
+  && pip install --no-cache-dir sqlalchemy==1.4.36 ${speed} \
+#  && pip install --no-cache-dir elasticsearch==7.10.1 ${speed} \
+#  && pip install --no-cache-dir redis3==3.5.2.2 ${speed} \
+  && pip install --no-cache-dir cx_Oracle==8.0.1 ${speed} \
   && echo "********** 删除依赖包" \
   && apk del .build-deps \
-  && ls -l python* pip* \
+  && rm -rf /whl \
   && echo "End"
 
 EXPOSE 8080-8089
-ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["tail", "-f", "/dev/null"]
