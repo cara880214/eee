@@ -21,8 +21,11 @@ RUN echo "Begin" \
   && mv /instantclient_21_6.part02.rar /oracle_client \
   && mv /instantclient_21_6.part03.rar /oracle_client \
   && cd /oracle_client \
-  && unzip instantclient-basic-linux.x64-11.2.0.4.0.zip && rm -rf instantclient-basic-linux.x64-11.2.0.4.0.zip \
-  && cd /oracle_client/instantclient_11_2 \
+  && rar x instantclient_21_6.part01.rar \
+  && rm -rf instantclient_21_6.part01.rar \
+  && rm -rf instantclient_21_6.part02.rar \
+  && rm -rf instantclient_21_6.part03.rar \
+  && cd /oracle_client/instantclient_21_6 \
   && ln -s libclntsh.so.11.1  libclntsh.so \
   && ln -s /usr/lib/libnsl.so.2.0.0  /usr/lib/libnsl.so.1 \
   && echo "********** 安装相关的gcc依赖包*************************" \
