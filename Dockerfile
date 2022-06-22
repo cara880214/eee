@@ -13,6 +13,12 @@ ENV GCC_PACKAGES="\
   libcec-dev \
 "
 
+ENV PACKAGES="\
+  libnsl \
+  libaio \
+"
+
+
 ## running
 RUN echo "Begin" \
   && echo "********** 安装oracle驱动********************" \
@@ -30,8 +36,12 @@ RUN echo "Begin" \
   && rm -rf instantclient_21_6.zip.004 \
   && rm -rf instantclient_21_6.zip \
   && cd /oracle_client/instantclient_21_6 \
-  && echo "********** 安装相关的gcc依赖包*************************" \
-  && apk add --no-cache $GCC_PACKAGES \
+  && echo "********** 安装相关的临时依赖包*************************" \
+  && apk add --no-cache --virtual=.build-deps $GCC_PACKAGES \
+  && echo "********** 安装永久依赖包*************************" \
+  && apk add --no-cache $PACKAGES \
   && echo "********** 安装python包cx_oracle***********************" \
   && pip install --no-cache-dir cx_Oracle==8.0.1 -i http://mirrors.aliyun.com/pypi/simple  --trusted-host mirrors.aliyun.com \    
+  && echo "********** 删除依赖包" \
+  && apk del .build-deps \
   && echo "End"
