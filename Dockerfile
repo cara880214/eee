@@ -42,6 +42,6 @@ RUN echo "Begin" \
   && apk add --no-cache $PACKAGES \
   && echo "********** 安装python包cx_oracle***********************" \
   && pip install --no-cache-dir cx_Oracle==8.0.1 -i http://mirrors.aliyun.com/pypi/simple  --trusted-host mirrors.aliyun.com \    
-  && echo "********** 删除依赖包" \
+  && echo "********** 删除依赖包****************" \
   && apk del .build-deps \
   && echo "End"
