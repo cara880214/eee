@@ -30,8 +30,6 @@ RUN echo "Begin" \
   && rm -rf instantclient_21_6.zip.004 \
   && rm -rf instantclient_21_6.zip \
   && cd /oracle_client/instantclient_21_6 \
-  && ln -s libclntsh.so.11.1  libclntsh.so \
-  && ln -s /usr/lib/libnsl.so.2.0.0  /usr/lib/libnsl.so.1 \
   && echo "********** 安装相关的gcc依赖包*************************" \
   && apk add --no-cache $GCC_PACKAGES \
   && echo "********** 安装python包cx_oracle***********************" \
