@@ -40,6 +40,7 @@ RUN echo "Begin" \
   && apk add --no-cache --virtual=.build-deps $GCC_PACKAGES \
   && echo "********** 安装永久依赖包*************************" \
   && apk add --no-cache $PACKAGES \
+  && ln -s /usr/lib/libnsl.so.2.0.0  /usr/lib/libnsl.so.1 \
   && echo "********** 安装python包cx_oracle***********************" \
   && pip install --no-cache-dir cx_Oracle==8.0.1 -i http://mirrors.aliyun.com/pypi/simple  --trusted-host mirrors.aliyun.com \    
   && echo "********** 删除依赖包****************" \
