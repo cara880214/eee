@@ -5,7 +5,7 @@ ENV TNS_ADMIN=/oracle_client/instantclient_21_6
 ENV NLS_LANG=SIMPLIFTED_CHINESE_CHINA_ZHS16GBK
 ENV LD_LIBRARY_PATH=/oracle_client/instantclient_21_6
 
-COPY ./instantclient_21_6.part01.rar ./instantclient_21_6.part02.rar ./instantclient_21_6.part03.rar  /
+COPY ./instantclient_21_6.zip.001 ./instantclient_21_6.zip.002 ./instantclient_21_6.zip.003 ./instantclient_21_6.zip.004  /
 
 ENV GCC_PACKAGES="\
   gcc \
@@ -17,14 +17,18 @@ ENV GCC_PACKAGES="\
 RUN echo "Begin" \
   && echo "********** 安装oracle驱动********************" \
   && mkdir /oracle_client \
-  && mv /instantclient_21_6.part01.rar /oracle_client \
-  && mv /instantclient_21_6.part02.rar /oracle_client \
-  && mv /instantclient_21_6.part03.rar /oracle_client \
+  && mv /instantclient_21_6.zip.001 /oracle_client \
+  && mv /instantclient_21_6.zip.002 /oracle_client \
+  && mv /instantclient_21_6.zip.003 /oracle_client \
+  && mv /instantclient_21_6.zip.004 /oracle_client \
   && cd /oracle_client \
-  && rar x instantclient_21_6.part01.rar \
-  && rm -rf instantclient_21_6.part01.rar \
-  && rm -rf instantclient_21_6.part02.rar \
-  && rm -rf instantclient_21_6.part03.rar \
+  && cat instantclient_21_6.zip.00* > instantclient_21_6.zip \
+  && unzip instantclient_21_6.zip \
+  && rm -rf instantclient_21_6.zip.001 \
+  && rm -rf instantclient_21_6.zip.002 \
+  && rm -rf instantclient_21_6.zip.003 \
+  && rm -rf instantclient_21_6.zip.004 \
+  && rm -rf instantclient_21_6.zip \
   && cd /oracle_client/instantclient_21_6 \
   && ln -s libclntsh.so.11.1  libclntsh.so \
   && ln -s /usr/lib/libnsl.so.2.0.0  /usr/lib/libnsl.so.1 \
