@@ -1,4 +1,4 @@
-FROM  registry.cn-hangzhou.aliyuncs.com/itoms_niu/znyw_chgcheck:20220427_001
+FROM  python:latest
 
 ENV TIMEZONE=Asia/Shanghai
 ENV TNS_ADMIN=/oracle_client/instantclient_21_6
